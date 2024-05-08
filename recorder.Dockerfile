@@ -1,13 +1,17 @@
 FROM python:3.9
 
+
 WORKDIR /app
+RUN apt-get update && \
+    apt-get install -y portaudio19-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY requirement.txt .
 RUN pip install -r requirement.txt
 
 COPY app/ .
 
-RUN apt-get update && apt-get install -y openssh-client
+RUN apt-get install -y openssh-client
 
 ARG FTP_HOST
 ARG FTP_USER

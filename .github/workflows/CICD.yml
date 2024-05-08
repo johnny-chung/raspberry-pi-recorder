@@ -17,7 +17,7 @@ jobs:
 
         run: |
           docker build --file recorder.Dockerfile \
-            --build-arg FTP_HOSTE="${{ secrets.FTP_HOST }}" \
+            --build-arg FTP_HOST="${{ secrets.FTP_HOST }}" \
             --build-arg FTP_USER="${{ secrets.FTP_USER }}" \
             --build-arg FTP_PASSWORD="${{ secrets.FTP_PASSWORD }}" \
             -t johnny/recorder .
