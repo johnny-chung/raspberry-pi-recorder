@@ -23,10 +23,10 @@ jobs:
             -t johnny/recorder .
 
       - name: Deploy to Raspberry Pi (optional)
-        uses: gr2m/scp-action@v1 # Action for secure file transfer (optional)
+        uses: appleboy/scp-action@v0.1.7 # Action for secure file transfer (optional)
         with:
           host: ${{ secrets.PI_SSH_HOST }} # SSH hostname of your Raspberry Pi
           username: ${{ secrets.PI_SSH_USERNAME }}
           password: ${{ secrets.PI_SSH_PASSWORD }}
-          source: docker-compose.yml # Optional configuration file (explained next)
+          source: "docker-compose.yml" # Optional configuration file (explained next)
           target: /home/pi # Target directory on your Raspberry Pi
