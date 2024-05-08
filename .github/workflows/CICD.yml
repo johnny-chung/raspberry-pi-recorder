@@ -18,12 +18,13 @@ jobs:
           docker build --file recorder.Dockerfile \
             --build-arg FTP_HOST="${{ secrets.FTP_HOST }}" \
             --build-arg FTP_USER="${{ secrets.FTP_USER }}" \
-            -t johnny/pi-recorder .
+            -t pi-recorder .
 
       - name: Push to Docker Hub
         run: |
-          docker login -u ${{ secrets.DOCKER_HUB_USER }} -p ${{ secrets.DOCKER_HUB_PW }}
-          docker push johnny/pi-recorder:latest
+          echo "${{ secrets.DOCKER_HUB_PW }}" | docker login --username ${{ secrets.DOCKER_HUB_USER }} --password-stdin
+          docker tag pi-recorder goodmanisltd/pi-recorder:latest
+          docker push goodmanisltd/pi-recorder:latest
 
       - name: Transfer FTP password
         run: |
@@ -33,5 +34,5 @@ jobs:
       - name: Pull and run Docker image on Raspberry Pi
         run: |
           ssh ${{ secrets.PI_SSH_USER }}@${{ secrets.PI_SSH_HOST }} \
-            "docker stop pi-recorder || true && docker pull johnny/pi-recorder:latest \
-            && docker run -d -e FTP_PASSWORD=$(cat /home/key/ftp.txt) johnny/pi-recorder:latest"
+            "docker stop pi-recorder || true && docker pull goodmanisltd/pi-recorder:latest \
+            && docker run -d -e FTP_PASSWORD=$(cat /home/key/ftp.txt) goodmanisltd/pi-recorder:latest"
