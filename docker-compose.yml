@@ -1,0 +1,8 @@
+version: "1.0"
+
+services:
+  recorder-app:
+    image: johnny/recorder:latest # Replace with your image name
+    restart: unless-stopped
+    volumes:
+      - ./:/app # Mount your project directory into the container
