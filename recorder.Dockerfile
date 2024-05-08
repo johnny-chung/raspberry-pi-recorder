@@ -15,10 +15,8 @@ RUN apt-get install -y openssh-client
 
 ARG FTP_HOST
 ARG FTP_USER
-ARG FTP_PASSWORD
 
 ENV FTP_HOST="$FTP_HOST"
-ENV FTP_USER="$FTP_USER"
-ENV FTP_PASSWORD="$FTP_PASSWORD" 
+ENV FTP_USER="$FTP_USER" 
 
 CMD ["python", "recorder.py"]

@@ -1,10 +1,22 @@
 import pyaudio           # Library for audio input/output
-import subprocess        # Module for spawning new processes
 from ftplib import FTP  # FTP client module
 import time             # Module for working with time
 import threading
 import os
 import logging
+import requests
+from logging.handlers import RotatingFileHandler
+
+
+def check_internet_connection():
+    try:
+        response = requests.get("http://httpbin.org/get", timeout=5)
+        if response.status_code == 200:
+            logging.info("Internet connection is available.")
+        else:
+            logging.error("Failed to connect to the internet.")
+    except Exception as e:
+        logging.error("Failed to connect to the internet:", e)
 
 # Constants for audio recording
 CHUNK = 1024            # Size of each audio chunk
@@ -13,10 +25,19 @@ CHANNELS = 1            # Number of audio channels (mono)
 RATE = 44100            # Sample rate (samples per second)
 RECORD_SECONDS = 15*60    # Duration of each recording session (in seconds)
 
+
+# Configure logging with rotating file handler
+LOG_FILENAME = "recorder.log"
+MAX_LOG_SIZE = 5 * 1024 * 1024  # 5MB in bytes
+BACKUP_COUNT = 5  # Keep up to 5 backup log files
+
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
+file_handler = RotatingFileHandler(LOG_FILENAME, maxBytes=MAX_LOG_SIZE, backupCount=BACKUP_COUNT)
+file_handler.setLevel(logging.INFO)
+logger.addHandler(file_handler)
 
 # Load environment variables (if available)
 try:
@@ -41,6 +62,7 @@ class FTPManager:
     def connect(self):
         connected = False
         retries = 0
+        logging.info(f"host: {self.host} | user: {self.user} | pw: {self.pw}")
         while not connected and retries < 3:
             try:
                 self.ftp = FTP(self.host)
@@ -77,7 +99,7 @@ class FTPManager:
                 self.ftp.mkd(new_dir)
             self.ftp.cwd(new_dir)
         except Exception as e:
-            logging.error(f"FTP upload error: {e}")
+            logging.error(f"Cannot create dir: {e}")
         pass
 
     def get_ftp(self):
@@ -125,6 +147,7 @@ def upload_to_ftp(audio_data, ftp_manager):
 
 
 def main():
+    check_internet_connection()
     ftp_manager = FTPManager(FTP_HOST, FTP_USER, FTP_PASSWORD, FTP_DIR)
     while True:
 

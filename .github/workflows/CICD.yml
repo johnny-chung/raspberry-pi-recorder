@@ -14,19 +14,24 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build Docker image
-
         run: |
           docker build --file recorder.Dockerfile \
             --build-arg FTP_HOST="${{ secrets.FTP_HOST }}" \
             --build-arg FTP_USER="${{ secrets.FTP_USER }}" \
-            --build-arg FTP_PASSWORD="${{ secrets.FTP_PASSWORD }}" \
-            -t johnny/recorder .
+            -t johnny/pi-recorder .
 
-      - name: Deploy to Raspberry Pi (optional)
-        uses: appleboy/scp-action@v0.1.7 # Action for secure file transfer (optional)
-        with:
-          host: ${{ secrets.PI_SSH_HOST }} # SSH hostname of your Raspberry Pi
-          username: ${{ secrets.PI_SSH_USERNAME }}
-          password: ${{ secrets.PI_SSH_PASSWORD }}
-          source: "docker-compose.yml" # Optional configuration file (explained next)
-          target: /home/pi # Target directory on your Raspberry Pi
+      - name: Push to Docker Hub
+        run: |
+          docker login -u ${{ secrets.DOCKER_HUB_USER }} -p ${{ secrets.DOCKER_HUB_PW }}
+          docker push johnny/pi-recorder:latest
+
+      - name: Transfer FTP password
+        run: |
+          echo ${{ secrets.FTP_PASSWORD }} > ftp.txt
+          scp ftp.txt ${{ secrets.PI_SSH_USER }}@${{ secrets.PI_SSH_HOST }}:/home/key/ftp.txt
+
+      - name: Pull and run Docker image on Raspberry Pi
+        run: |
+          ssh ${{ secrets.PI_SSH_USER }}@${{ secrets.PI_SSH_HOST }} \
+            "docker stop pi-recorder || true && docker pull johnny/pi-recorder:latest \
+            && docker run -d -e FTP_PASSWORD=$(cat /home/key/ftp.txt) johnny/pi-recorder:latest"
