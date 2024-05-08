@@ -9,24 +9,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
- steps:
+    steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
       - name: Build Docker image
 
-       run: |
+        run: |
           docker build \
             --build-arg FTP_HOSTE="${{ secrets.FTP_HOST }}" \
             --build-arg FTP_USER="${{ secrets.FTP_USER }}" \
             --build-arg FTP_PASSWORD="${{ secrets.FTP_PASSWORD }}" \
             -t johnny/recorder .
-      
+
       - name: Deploy to Raspberry Pi (optional)
-      uses: gr2m/scp-action@v1  # Action for secure file transfer (optional)
-      with:
-        host: ${{ secrets.PI_SSH_HOST }}  # SSH hostname of your Raspberry Pi
-        username: ${{ secrets.PI_SSH_USERNAME }}
-        password: ${{ secrets.PI_SSH_PASSWORD }}
-        source: docker-compose.yml  # Optional configuration file (explained next)
-        target: /home/pi  # Target directory on your Raspberry Pi
+        uses: gr2m/scp-action@v1 # Action for secure file transfer (optional)
+        with:
+          host: ${{ secrets.PI_SSH_HOST }} # SSH hostname of your Raspberry Pi
+          username: ${{ secrets.PI_SSH_USERNAME }}
+          password: ${{ secrets.PI_SSH_PASSWORD }}
+          source: docker-compose.yml # Optional configuration file (explained next)
+          target: /home/pi # Target directory on your Raspberry Pi
