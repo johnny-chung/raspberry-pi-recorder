@@ -4,6 +4,7 @@ from ftplib import FTP  # FTP client module
 import time             # Module for working with time
 import threading
 import os
+import logging
 
 # Constants for audio recording
 CHUNK = 1024            # Size of each audio chunk
@@ -11,6 +12,11 @@ FORMAT = pyaudio.paInt16 # Audio format
 CHANNELS = 1            # Number of audio channels (mono)
 RATE = 44100            # Sample rate (samples per second)
 RECORD_SECONDS = 15*60    # Duration of each recording session (in seconds)
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+logger = logging.getLogger(__name__)
+
 
 # Load environment variables (if available)
 try:
@@ -23,7 +29,7 @@ except ImportError:
 FTP_HOST = os.getenv("FTP_HOST", "")
 FTP_USER = os.getenv("FTP_USER", "")
 FTP_PASSWORD = os.getenv("FTP_PASSWORD", "")
-FTP_DIR = "/upload/audio"  # Directory on FTP server for uploads
+FTP_DIR = "/upload"  # Directory on FTP server for uploads
 
 
 class FTPManager:
@@ -34,14 +40,17 @@ class FTPManager:
 
     def connect(self):
         connected = False
-        while not connected:
+        retries = 0
+        while not connected and retries < 3:
             try:
                 self.ftp = FTP(self.host)
                 self.ftp.login(self.user, self.pw)
                 connected = True
-                print(f"FTP server connected")
+                self.createDir("upload")
+                logging.info(f"FTP server connected")
             except Exception as e:
-                print(f"FTP srv connection fail: {e}")
+                logging.error(f"FTP server connection fail: {e}")
+                retries += 1
                 time.sleep(10)
 
     def upload(self, filename):
@@ -54,13 +63,22 @@ class FTPManager:
                 count = 3
             except Exception as e:
                 count += 1
-                print(f"FTP upload fail: {e}")
+                logging.error(f"FTP upload fail: {e}")
                 time.sleep(10)
 
     def close(self):
         if self.ftp:
             self.ftp.quit()
-            print("Disconnected from FTP server")
+            logging.info("Disconnected from FTP server")
+
+    def createDir(self, new_dir):
+        try:        
+            if new_dir not in self.ftp.nlst():
+                self.ftp.mkd(new_dir)
+            self.ftp.cwd(new_dir)
+        except Exception as e:
+            logging.error(f"FTP upload error: {e}")
+        pass
 
     def get_ftp(self):
         return self.ftp
@@ -87,20 +105,13 @@ def record_audio():
     #join the audio trunk in bytes literal form 
     return b''.join(frames)
 
-def create_folder_in_ftp(ftp):
-    try:
-        today = time.strftime("%Y%m%d")
-        if today not in ftp.nlst():
-            ftp.mkd(today)
-        ftp.cwd(today)
-    except Exception as e:
-        print(f"FTP upload error: {e}")
-        pass
+   
 
 def upload_to_ftp(audio_data, ftp_manager):
     try:        
         ftp_manager.get_ftp().cwd(FTP_DIR)
-        create_folder_in_ftp(ftp_manager.get_ftp())
+        todayDir = time.strftime("%Y%m%d")
+        ftp_manager.createDir(todayDir)
 
         filename = f"{time.strftime('%Y%m%d-%H-%M-%S')}.wav"
         with open(filename, 'wb') as f:
@@ -110,7 +121,7 @@ def upload_to_ftp(audio_data, ftp_manager):
         print(f"Audio uploaded successfully: {filename}")
 
     except Exception as e:
-        print(f"FTP upload error: {e}")
+        logging.error(f"Upload error: {e}")
 
 
 def main():
