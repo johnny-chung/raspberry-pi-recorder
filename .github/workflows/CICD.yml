@@ -16,7 +16,7 @@ jobs:
       - name: Build Docker image
 
         run: |
-          docker build \
+          docker build --file recorder.Dockerfile \
             --build-arg FTP_HOSTE="${{ secrets.FTP_HOST }}" \
             --build-arg FTP_USER="${{ secrets.FTP_USER }}" \
             --build-arg FTP_PASSWORD="${{ secrets.FTP_PASSWORD }}" \
