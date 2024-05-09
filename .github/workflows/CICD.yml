@@ -40,7 +40,7 @@ jobs:
       - name: Pull and run Docker image on Raspberry Pi
         run: |                     
           ssh ${{ secrets.PI_SSH_USER }}@${{ secrets.PI_SSH_HOST }}   
-          whoami
+          sudo apt-get update
           
  # echo "${{ secrets.PEM_KEY }}" > pem_key.pem
             # chmod 600 pem_key.pem 
