@@ -35,10 +35,10 @@ jobs:
       - name: Transfer FTP password
         run: |
           echo ${{secrets.FTP_PASSWORD}} > ftp.txt
-          scp ftp.txt ec2-user@ec2-54-144-96-209.compute-1.amazonaws.com:./home/key
+          scp ftp.txt ${{ vars.PI_SSH_USER }}@${{ vars.PI_SSH_HOST }}:./home/key
 
       - name: Pull and run Docker image on Raspberry Pi
-        run: |                     
+        run: |
           ssh ${{ vars.PI_SSH_USER }}@${{ vars.PI_SSH_HOST }} \
           'if ! command -v docker &> /dev/null; then \
             sudo apt-get update && \
@@ -48,6 +48,6 @@ jobs:
           docker stop pi-recorder || true; \
           docker pull goodmanisltd/pi-recorder:latest; \
           docker run --restart always -it --rm -e FTP_PASSWORD=$(cat /home/key/ftp.txt) goodmanisltd/pi-recorder:latest'
-        
 
-            
+
+
