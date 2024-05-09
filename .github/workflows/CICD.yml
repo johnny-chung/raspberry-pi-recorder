@@ -13,25 +13,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Build Docker image
-        run: |
-          docker build --file recorder.Dockerfile \
-            --build-arg FTP_HOST="${{ secrets.FTP_HOST }}" \
-            --build-arg FTP_USER="${{ secrets.FTP_USER }}" \
-            -t pi-recorder .
+      # - name: Build Docker image
+      #   run: |
+      #     docker build --file recorder.Dockerfile \
+      #       --build-arg FTP_HOST="${{ secrets.FTP_HOST }}" \
+      #       --build-arg FTP_USER="${{ secrets.FTP_USER }}" \
+      #       -t pi-recorder .
 
-      - name: Push to Docker Hub
-        run: |
-          echo "${{ secrets.DOCKER_HUB_PW }}" | docker login --username ${{ secrets.DOCKER_HUB_USER }} --password-stdin
-          docker tag pi-recorder goodmanisltd/pi-recorder:latest
-          docker push goodmanisltd/pi-recorder:latest
+      # - name: Push to Docker Hub
+      #   run: |
+      #     echo "${{ secrets.DOCKER_HUB_PW }}" | docker login --username ${{ secrets.DOCKER_HUB_USER }} --password-stdin
+      #     docker tag pi-recorder goodmanisltd/pi-recorder:latest
+      #     docker push goodmanisltd/pi-recorder:latest
 
       - name: Transfer FTP password
         run: |
           echo "${{ secrets.FTP_PASSWORD }}" > ftp.txt
           echo "${{ secrets.PEM_KEY }}" > pem_key.pem
-          chmod 600 pem_key.pem 
-          scp -i pem_key.pem ftp.txt ${{ secrets.PI_SSH_USER }}@${{ secrets.PI_SSH_HOST }}:/home/key/ftp.txt
+          chmod 777 pem_key.pem 
+          scp -i pem_key.pem ftp.txt ${{ secrets.PI_SSH_USER }}@${{ secrets.PI_SSH_HOST }}:./home/key
 
       - name: Pull and run Docker image on Raspberry Pi
         run: |
