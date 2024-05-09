@@ -9,7 +9,7 @@ RUN apt-get update && \
 COPY requirement.txt .
 RUN pip install -r requirement.txt
 
-COPY app/ .
+COPY app/recorder.py .
 
 RUN apt-get install -y openssh-client
 
