@@ -31,7 +31,7 @@ jobs:
           echo "${{ secrets.FTP_PASSWORD }}" > ftp.txt
           echo "${{ secrets.PEM_KEY }}" > pem_key.pem
           chmod 777 pem_key.pem 
-          scp -i "pem_key.pem" ftp.txt ${{ secrets.PI_SSH_USER }}@${{ secrets.PI_SSH_HOST }}:./home/key
+          ssh -i "pem_key.pem" ftp.txt ec2-user@ec2-54-144-96-209.compute-1.amazonaws.com "echo yes"
 
       - name: Pull and run Docker image on Raspberry Pi
         run: |
