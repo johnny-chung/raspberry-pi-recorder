@@ -39,15 +39,17 @@ jobs:
 
       - name: Pull and run Docker image on Raspberry Pi
         run: |
-          echo "${{ secrets.PEM_KEY }}" > pem_key.pem
-          chmod 600 pem_key.pem 
-          ssh -i "pem_key.pem" ${{ secrets.PI_SSH_USER }}@${{ secrets.PI_SSH_HOST }}            
-            "echo 'ssh success'; \
-            if ! command -v docker &> /dev/null; then \
-              sudo apt-get update && \
-              sudo apt-get install -y docker.io && \
-              sudo systemctl enable docker; \
-            fi; \
-            docker stop pi-recorder || true; \
-            docker pull goodmanisltd/pi-recorder:latest; \
-            docker run -- restart always -it --rm -e FTP_PASSWORD=$(cat /home/key/ftp.txt) goodmanisltd/pi-recorder:latest;"
+          # echo "${{ secrets.PEM_KEY }}" > pem_key.pem
+          # chmod 600 pem_key.pem 
+          # ssh -i "pem_key.pem" ${{ secrets.PI_SSH_USER }}@${{ secrets.PI_SSH_HOST }}            
+          ssh ${{ secrets.PI_SSH_USER }}@${{ secrets.PI_SSH_HOST }}   
+          whoami         
+            # "echo 'ssh success'; \
+            # if ! command -v docker &> /dev/null; then \
+            #   sudo apt-get update && \
+            #   sudo apt-get install -y docker.io && \
+            #   sudo systemctl enable docker; \
+            # fi; \
+            # docker stop pi-recorder || true; \
+            # docker pull goodmanisltd/pi-recorder:latest; \
+            # docker run -- restart always -it --rm -e FTP_PASSWORD=$(cat /home/key/ftp.txt) goodmanisltd/pi-recorder:latest;"
