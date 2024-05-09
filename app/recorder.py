@@ -6,6 +6,7 @@ import os
 import logging
 import requests
 from logging.handlers import RotatingFileHandler
+import io
 
 
 def check_internet_connection():
@@ -23,7 +24,7 @@ CHUNK = 1024            # Size of each audio chunk
 FORMAT = pyaudio.paInt16 # Audio format
 CHANNELS = 1            # Number of audio channels (mono)
 RATE = 44100            # Sample rate (samples per second)
-RECORD_SECONDS = 15*60    # Duration of each recording session (in seconds)
+RECORD_SECONDS = 10    # Duration of each recording session (in seconds)
 
 
 # Configure logging with rotating file handler
@@ -75,13 +76,13 @@ class FTPManager:
                 retries += 1
                 time.sleep(10)
 
-    def upload(self, filename):
+    def upload(self, filename, file_obj):
         if self.ftp is None:
             self.connect()
         count = 0
         while count <= 2:
             try:                
-                self.ftp.storbinary(f"STOR {filename}", open(filename, 'rb'))
+                self.ftp.storbinary(f"STOR {filename}",file_obj)
                 count = 3
             except Exception as e:
                 count += 1
@@ -135,10 +136,8 @@ def upload_to_ftp(audio_data, ftp_manager):
         todayDir = time.strftime("%Y%m%d")
         ftp_manager.createDir(todayDir)
 
-        filename = f"{time.strftime('%Y%m%d-%H-%M-%S')}.wav"
-        with open(filename, 'wb') as f:
-            f.write(audio_data)
-        ftp_manager.upload(filename)
+        filename = f"{time.strftime('%Y%m%d-%H-%M-%S')}.wav"        
+        ftp_manager.upload(filename, io.BytesIO(audio_data))
 
         print(f"Audio uploaded successfully: {filename}")
 
