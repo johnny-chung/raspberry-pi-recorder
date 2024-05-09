@@ -24,7 +24,7 @@ CHUNK = 1024            # Size of each audio chunk
 FORMAT = pyaudio.paInt16 # Audio format
 CHANNELS = 1            # Number of audio channels (mono)
 RATE = 44100            # Sample rate (samples per second)
-RECORD_SECONDS = 10    # Duration of each recording session (in seconds)
+RECORD_SECONDS = 60    # Duration of each recording session (in seconds)
 
 
 # Configure logging with rotating file handler

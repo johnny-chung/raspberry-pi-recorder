@@ -13,24 +13,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # - name: Build Docker image
-      #   run: |
-      #     docker build --file recorder.Dockerfile \
-      #       --build-arg FTP_HOST="${{ secrets.FTP_HOST }}" \
-      #       --build-arg FTP_USER="${{ secrets.FTP_USER }}" \
-      #       -t pi-recorder .
+      - name: Build Docker image
+        run: |
+          docker build --file recorder.Dockerfile \
+            --build-arg FTP_HOST="${{ vars.FTP_HOST }}" \
+            --build-arg FTP_USER="${{ vars.FTP_USER }}" \
+            -t pi-recorder .
 
-      # - name: Push to Docker Hub
-      #   run: |
-      #     echo "${{ secrets.DOCKER_HUB_PW }}" | docker login --username ${{ secrets.DOCKER_HUB_USER }} --password-stdin
-      #     docker tag pi-recorder goodmanisltd/pi-recorder:latest
-      #     docker push goodmanisltd/pi-recorder:latest
+      - name: Push to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_HUB_PW }}" | docker login --username ${{ secrets.DOCKER_HUB_USER }} --password-stdin
+          docker tag pi-recorder goodmanisltd/pi-recorder:latest
+          docker push goodmanisltd/pi-recorder:latest
 
       - name: Add host
         uses: kielabokkie/ssh-key-and-known-hosts-action@v1
         with:
           ssh-private-key: ${{ secrets.PEM_KEY}}
-          ssh-host: ec2-54-144-96-209.compute-1.amazonaws.com
+          ssh-host: ${{ vars.PI_SSH_HOST }}
 
       - name: Transfer FTP password
         run: |
@@ -39,21 +39,15 @@ jobs:
 
       - name: Pull and run Docker image on Raspberry Pi
         run: |                     
-          ssh ${{ secrets.PI_SSH_USER }}@${{ secrets.PI_SSH_HOST }}   
-          sudo apt-get update
-          
- # echo "${{ secrets.PEM_KEY }}" > pem_key.pem
-            # chmod 600 pem_key.pem 
-            # ssh -i "pem_key.pem" ${{ secrets.PI_SSH_USER }}@${{ secrets.PI_SSH_HOST }}         
-            # "echo 'ssh success'; \
-            # if ! command -v docker &> /dev/null; then \
-            #   sudo apt-get update && \
-            #   sudo apt-get install -y docker.io && \
-            #   sudo systemctl enable docker; \
-            # fi; \
-            # docker stop pi-recorder || true; \
-            # docker pull goodmanisltd/pi-recorder:latest; \
-            # docker run -- restart always -it --rm -e FTP_PASSWORD=$(cat /home/key/ftp.txt) goodmanisltd/pi-recorder:latest;"
-         
+          ssh ${{ vars.PI_SSH_USER }}@${{ vars.PI_SSH_HOST }} \
+          'if ! command -v docker &> /dev/null; then \
+            sudo apt-get update && \
+            sudo apt-get install -y docker.io && \
+            sudo systemctl enable docker; \
+          fi; \
+          docker stop pi-recorder || true; \
+          docker pull goodmanisltd/pi-recorder:latest; \
+          docker run --restart always -it --rm -e FTP_PASSWORD=$(cat /home/key/ftp.txt) goodmanisltd/pi-recorder:latest'
+        
 
             
