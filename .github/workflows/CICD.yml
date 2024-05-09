@@ -34,7 +34,8 @@ jobs:
 
       - name: Transfer FTP password
         run: |
-          ssh -i ${{ secrets.PEM_KEY }} ec2-user@ec2-54-144-96-209.compute-1.amazonaws.com
+          echo ${{secrets.FTP_PASSWORD}} > ftp.txt
+          scp ftp.txt ec2-user@ec2-54-144-96-209.compute-1.amazonaws.com:./home/key
 
       - name: Pull and run Docker image on Raspberry Pi
         run: |
