@@ -48,4 +48,4 @@ jobs:
           sudo systemctl start docker;
           docker stop goodmanisltd/pi-recorder || true; \
           docker pull goodmanisltd/pi-recorder:latest; \
-          docker run --restart always -it --rm -e FTP_PASSWORD=$(cat /home/key/ftp.txt) goodmanisltd/pi-recorder:latest'
+          docker run --restart always -it --rm -e FTP_PASSWORD=$(cat ./home/key/ftp.txt) goodmanisltd/pi-recorder:latest'
